@@ -27,6 +27,10 @@
 
 #include "cbor.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef _BSD_SOURCE
 #  define _BSD_SOURCE
 #endif
@@ -37,7 +41,9 @@
 #  include <assert.h>
 #endif
 #include <float.h>
+#ifndef CBOR_NO_FLOATING_TYPE
 #include <math.h>
+#endif
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -53,7 +59,7 @@
 #if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L || __cpp_static_assert >= 200410
 #  define cbor_static_assert(x)         static_assert(x, #x)
 #elif !defined(__cplusplus) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && (__STDC_VERSION__ > 199901L)
-#  define cbor_static_assert(x)         _Static_assert(x, #x)
+#  define cbor_static_assert(x)         static_assert(x, #x)
 #else
 #  define cbor_static_assert(x)         ((void)sizeof(char[2*!!(x) - 1]))
 #endif
@@ -199,6 +205,7 @@ static inline bool add_check_overflow(size_t v1, size_t v2, size_t *r)
 #endif
 }
 
+#ifndef CBOR_NO_HALF_FLOAT_TYPE
 static inline unsigned short encode_half(double val)
 {
 #ifdef __F16C__
@@ -250,6 +257,12 @@ static inline double decode_half(unsigned short half)
     return half & 0x8000 ? -val : val;
 #endif
 }
+
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* COMPILERSUPPORT_H */
 
