@@ -1,4 +1,4 @@
-if(TINYCBOR)
+if(CONFIG_TINYCBOR)
 zephyr_interface_library_named(TINYCBOR)
 
 target_include_directories(TINYCBOR INTERFACE src)
