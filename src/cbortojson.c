@@ -403,7 +403,7 @@ static CborError stringify_map_key(char **key, CborValue *it, int flags, CborTyp
 {
     (void)flags;    /* unused */
     (void)type;     /* unused */
-#ifdef CBOR_WITHOUT_OPEN_MEMSTREAM
+#ifdef WITHOUT_OPEN_MEMSTREAM
     (void)key;      /* unused */
     (void)it;       /* unused */
     return CborErrorJsonNotImplemented;
