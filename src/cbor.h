@@ -37,6 +37,7 @@
 #include "cbor_buf_writer.h"
 #include "cbor_buf_reader.h"
 #include "tinycbor-version.h"
+#include "config.h"
 
 #define TINYCBOR_VERSION            ((TINYCBOR_VERSION_MAJOR << 16) | (TINYCBOR_VERSION_MINOR << 8) | TINYCBOR_VERSION_PATCH)
 
