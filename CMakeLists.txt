@@ -1,7 +1,7 @@
 if(CONFIG_TINYCBOR)
 zephyr_interface_library_named(TINYCBOR)
 
-target_include_directories(TINYCBOR INTERFACE src)
+target_include_directories(${IMAGE}TINYCBOR INTERFACE src)
 
 zephyr_library()
 zephyr_library_sources(
@@ -15,6 +15,6 @@ zephyr_library_sources_ifdef(CONFIG_NEWLIB_LIBC src/cborparser_dup_string.c)
 
 zephyr_library_sources_ifdef(CONFIG_CBOR_PRETTY_PRINTING src/cborpretty.c)
 
-zephyr_library_link_libraries(TINYCBOR)
-target_link_libraries(TINYCBOR INTERFACE zephyr_interface)
+zephyr_library_link_libraries(${IMAGE}TINYCBOR)
+target_link_libraries(${IMAGE}TINYCBOR INTERFACE ${IMAGE}zephyr_interface)
 endif()
