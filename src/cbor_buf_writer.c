@@ -22,8 +22,8 @@
 **
 ****************************************************************************/
 
-#include "cbor.h"
-#include "cbor_buf_writer.h"
+#include <tinycbor/cbor.h>
+#include <tinycbor/cbor_buf_writer.h>
 
 CBOR_INLINE_API int
 would_overflow(struct cbor_buf_writer *cb, size_t len)

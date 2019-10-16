@@ -25,7 +25,7 @@
 #ifndef CBOR_UTF8_H
 #define CBOR_UTF8_H
 
-#include "compilersupport_p.h"
+#include "tinycbor/compilersupport_p.h"
 
 #include <stdint.h>
 

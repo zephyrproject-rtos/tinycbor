@@ -1,7 +1,11 @@
 if(CONFIG_TINYCBOR)
 zephyr_interface_library_named(TINYCBOR)
 
-target_include_directories(TINYCBOR INTERFACE src)
+# This line is for compatibility and should be removed at some point of
+# time. It is supposed to allow building sources that still reference cbor
+# headers without tinycbor subrirectory.
+target_include_directories(TINYCBOR INTERFACE include/tinycbor)
+target_include_directories(TINYCBOR INTERFACE include)
 
 zephyr_library()
 zephyr_library_sources(

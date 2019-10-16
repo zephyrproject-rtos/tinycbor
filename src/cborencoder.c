@@ -32,10 +32,10 @@
 #  define __STDC_LIMIT_MACROS 1
 #endif
 
-#include "cbor.h"
-#include "cborinternal_p.h"
-#include "compilersupport_p.h"
-#include "cbor_buf_writer.h"
+#include "tinycbor/cbor.h"
+#include "tinycbor/cborinternal_p.h"
+#include "tinycbor/compilersupport_p.h"
+#include "tinycbor/cbor_buf_writer.h"
 
 #include <stdlib.h>
 #include <string.h>

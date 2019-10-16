@@ -25,7 +25,7 @@
 #ifndef COMPILERSUPPORT_H
 #define COMPILERSUPPORT_H
 
-#include "cbor.h"
+#include "tinycbor/cbor.h"
 
 #ifdef __cplusplus
 extern "C" {

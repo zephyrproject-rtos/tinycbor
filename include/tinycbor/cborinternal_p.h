@@ -25,7 +25,7 @@
 #ifndef CBORINTERNAL_P_H
 #define CBORINTERNAL_P_H
 
-#include "compilersupport_p.h"
+#include "tinycbor/compilersupport_p.h"
 
 #ifndef CBOR_INTERNAL_API
 #  define CBOR_INTERNAL_API

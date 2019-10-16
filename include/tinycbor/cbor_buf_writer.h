@@ -25,7 +25,7 @@
 #ifndef CBOR_BUF_WRITER_H
 #define CBOR_BUF_WRITER_H
 
-#include "cbor_encoder_writer.h"
+#include "tinycbor/cbor_encoder_writer.h"
 
 #ifdef __cplusplus
 extern "C" {
