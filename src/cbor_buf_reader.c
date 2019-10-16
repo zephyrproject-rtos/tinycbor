@@ -22,8 +22,8 @@
 **
 ****************************************************************************/
 
-#include "cbor_buf_reader.h"
-#include "compilersupport_p.h"
+#include <tinycbor/cbor_buf_reader.h>
+#include <tinycbor/compilersupport_p.h>
 
 /**
  * \addtogroup CborParsing

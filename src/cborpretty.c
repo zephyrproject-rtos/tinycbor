@@ -28,10 +28,10 @@
 #  define __STDC_LIMIT_MACROS 1
 #endif
 
-#include "cbor.h"
-#include "compilersupport_p.h"
-#include "cborinternal_p.h"
-#include "utf8_p.h"
+#include "tinycbor/cbor.h"
+#include "tinycbor/compilersupport_p.h"
+#include "tinycbor/cborinternal_p.h"
+#include "tinycbor/utf8_p.h"
 
 #include <inttypes.h>
 #include <float.h>

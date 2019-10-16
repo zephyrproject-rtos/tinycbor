@@ -32,13 +32,13 @@
 #  define __STDC_LIMIT_MACROS 1
 #endif
 
-#include "cbor.h"
-#include "cborinternal_p.h"
-#include "compilersupport_p.h"
+#include "tinycbor/cbor.h"
+#include "tinycbor/cborinternal_p.h"
+#include "tinycbor/compilersupport_p.h"
 
 #include <string.h>
 
-#include "cbor_buf_reader.h"
+#include <tinycbor/cbor_buf_reader.h>
 /**
  * \defgroup CborParsing Parsing CBOR streams
  * \brief Group of functions used to parse CBOR streams.

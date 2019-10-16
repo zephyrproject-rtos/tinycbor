@@ -32,9 +32,9 @@
 #  define __STDC_LIMIT_MACROS 1
 #endif
 
-#include "cbor.h"
+#include "tinycbor/cbor.h"
 #include <stdlib.h>
-#include "compilersupport_p.h"
+#include "tinycbor/compilersupport_p.h"
 
 /**
  * \fn CborError cbor_value_dup_text_string(const CborValue *value, char **buffer, size_t *buflen, CborValue *next)

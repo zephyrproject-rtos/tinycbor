@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Intel Corporation
+** Copyright (C) 2016 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -22,41 +22,26 @@
 **
 ****************************************************************************/
 
-#ifndef CBORJSON_H
-#define CBORJSON_H
-
-#include "cbor.h"
+#ifndef CBOR_BUF_READER_H
+#define CBOR_BUF_READER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Conversion to JSON */
-enum CborToJsonFlags
-{
-    CborConvertAddMetadata = 1,
-    CborConvertTagsToObjects = 2,
-    CborConvertIgnoreTags = 0,
+#include "tinycbor/cbor_decoder_reader.h"
 
-    CborConvertObeyByteStringTags = 0,
-    CborConvertByteStringsToBase64Url = 4,
-
-    CborConvertRequireMapStringKeys = 0,
-    CborConvertStringifyMapKeys = 8,
-
-    CborConvertDefaultFlags = 0
+struct cbor_buf_reader {
+    struct cbor_decoder_reader r;
+    const uint8_t *buffer;
 };
 
-CBOR_API CborError cbor_value_to_json_advance(FILE *out, CborValue *value, int flags);
-CBOR_INLINE_API CborError cbor_value_to_json(FILE *out, const CborValue *value, int flags)
-{
-    CborValue copy = *value;
-    return cbor_value_to_json_advance(out, &copy, flags);
-}
+void cbor_buf_reader_init(struct cbor_buf_reader *cb, const uint8_t *buffer,
+                          size_t data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CBORJSON_H */
+#endif /* CBOR_BUF_READER_H */
 
