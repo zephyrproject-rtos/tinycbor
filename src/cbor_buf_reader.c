@@ -24,44 +24,12 @@
 
 #include <tinycbor/cbor_buf_reader.h>
 #include <tinycbor/compilersupport_p.h>
+#include <tinycbor/extract_number_p.h>
 
 /**
  * \addtogroup CborParsing
  * @{
  */
-
-/**
- * Gets 16 bit unsigned value from the passed in ptr location, it also
- * converts it to host byte order
- */
-CBOR_INLINE_API uint16_t get16(const uint8_t *ptr)
-{
-    uint16_t result;
-    memcpy(&result, ptr, sizeof(result));
-    return cbor_ntohs(result);
-}
-
-/**
- * Gets 32 bit unsigned value from the passed in ptr location, it also
- * converts it to host byte order
- */
-CBOR_INLINE_API uint32_t get32(const uint8_t *ptr)
-{
-    uint32_t result;
-    memcpy(&result, ptr, sizeof(result));
-    return cbor_ntohl(result);
-}
-
-/**
- * Gets 64 bit unsigned value from the passed in ptr location, it also
- * converts it to host byte order
- */
-CBOR_INLINE_API uint64_t get64(const uint8_t *ptr)
-{
-    uint64_t result;
-    memcpy(&result, ptr, sizeof(result));
-    return cbor_ntohll(result);
-}
 
 /**
  * Gets a string chunk from the passed in ptr location

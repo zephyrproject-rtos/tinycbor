@@ -33,7 +33,7 @@
 #endif
 
 #include "tinycbor/cbor.h"
-#include "tinycbor/cborinternal_p.h"
+#include "tinycbor/cborconstants_p.h"
 #include "tinycbor/compilersupport_p.h"
 #include "tinycbor/utf8_p.h"
 

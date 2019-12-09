@@ -33,8 +33,8 @@
 #endif
 
 #include "tinycbor/cbor.h"
-#include "tinycbor/cborinternal_p.h"
 #include "tinycbor/compilersupport_p.h"
+#include "tinycbor/cborconstants_p.h"
 #include "tinycbor/cbor_buf_writer.h"
 
 #include <stdlib.h>

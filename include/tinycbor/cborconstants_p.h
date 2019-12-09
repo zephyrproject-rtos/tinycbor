@@ -22,10 +22,8 @@
 **
 ****************************************************************************/
 
-#ifndef CBORINTERNAL_P_H
-#define CBORINTERNAL_P_H
-
-#include "tinycbor/compilersupport_p.h"
+#ifndef CBORCONSTANTS_P_H
+#define CBORCONSTANTS_P_H
 
 #ifndef CBOR_INTERNAL_API
 #  define CBOR_INTERNAL_API
@@ -86,4 +84,4 @@ enum {
 CBOR_INTERNAL_API CBOR_INTERNAL_API_CC CborError _cbor_value_extract_number(const CborParser *p, int *offset, uint64_t *len);
 CBOR_INTERNAL_API CBOR_INTERNAL_API_CC CborError _cbor_value_prepare_string_iteration(CborValue *it);
 
-#endif /* CBORINTERNAL_P_H */
+#endif /* CBORCONSTANTS_P_H */
