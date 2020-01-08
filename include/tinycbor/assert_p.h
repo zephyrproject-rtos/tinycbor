@@ -22,25 +22,8 @@
 **
 ****************************************************************************/
 
-#define _BSD_SOURCE 1
-#define _DEFAULT_SOURCE 1
-#ifndef __STDC_LIMIT_MACROS
-#  define __STDC_LIMIT_MACROS 1
-#endif
-
-#include "tinycbor/cbor.h"
-#include "tinycbor/cborconstants_p.h"
-#include "tinycbor/compilersupport_p.h"
-#include "tinycbor/extract_number_p.h"
-
 #include <assert.h>
-
-#include "tinycbor/assert_p.h"       /* Always include last */
-
-/**
- * \addtogroup CborEncoding
- * @{
- */
-
-
-/** @} */
+#ifdef NDEBUG
+#  undef assert
+#  define assert(cond)      do { if (!(cond)) unreachable(); } while (0)
+#endif

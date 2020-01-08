@@ -17,42 +17,31 @@
  * under the License.
  */
 
-#ifndef CBOR_CNT_WRITER_H
-#define CBOR_CNT_WRITER_H
+#include "os/mynewt.h"
+#include <tinycbor/cbor.h>
+#include <tinycbor/cbor.h>
+#include <tinycbor/cbor_mbuf_writer.h>
 
-#include "cbor.h"
+int
+cbor_mbuf_writer(struct cbor_encoder_writer *arg, const char *data, int len)
+{
+    int rc;
+    struct cbor_mbuf_writer *cb = (struct cbor_mbuf_writer *) arg;
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    /* use this count writer if you want to try out a cbor encoding to see
-     * how long it would be (before allocating memory). This replaced the
-     * code in tinycbor.h that would try to do this once the encoding failed
-     * in a buffer.  Its much easier to understand this way (for me)
-     */
-
-struct CborCntWriter {
-    struct cbor_encoder_writer enc;
-};
-
-static inline int
-cbor_cnt_writer(struct cbor_encoder_writer *arg, const char *data, int len) {
-    struct CborCntWriter *cb = (struct CborCntWriter *) arg;
+    rc = os_mbuf_append(cb->m, data, len);
+    if (rc) {
+        return CborErrorOutOfMemory;
+    }
     cb->enc.bytes_written += len;
     return CborNoError;
 }
 
-static inline void
-cbor_cnt_writer_init(struct CborCntWriter *cb) {
+
+void
+cbor_mbuf_writer_init(struct cbor_mbuf_writer *cb, struct os_mbuf *m)
+{
+    cb->m = m;
     cb->enc.bytes_written = 0;
-    cb->enc.write = &cbor_cnt_writer;
+    cb->enc.write = &cbor_mbuf_writer;
 }
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* CBOR_CNT_WRITER_H */
 

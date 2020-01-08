@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 Intel Corporation
+** Copyright (C) 2016 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -22,25 +22,34 @@
 **
 ****************************************************************************/
 
-#define _BSD_SOURCE 1
-#define _DEFAULT_SOURCE 1
-#ifndef __STDC_LIMIT_MACROS
-#  define __STDC_LIMIT_MACROS 1
+#ifndef MATH_SUPPORT_H
+#define MATH_SUPPORT_H
+
+#include <math.h>
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#include "tinycbor/cbor.h"
-#include "tinycbor/cborconstants_p.h"
-#include "tinycbor/compilersupport_p.h"
-#include "tinycbor/extract_number_p.h"
+/* this function was copied & adapted from RFC 7049 Appendix D */
+static inline double decode_half(unsigned short half)
+{
+#ifdef __F16C__
+    return _cvtsh_ss(half);
+#else
+    int exp = (half >> 10) & 0x1f;
+    int mant = half & 0x3ff;
+    double val;
+    if (exp == 0) val = ldexp(mant, -24);
+    else if (exp != 31) val = ldexp(mant + 1024, exp - 25);
+    else val = mant == 0 ? INFINITY : NAN;
+    return half & 0x8000 ? -val : val;
+#endif
+}
 
-#include <assert.h>
+#ifdef __cplusplus
+}
+#endif
 
-#include "tinycbor/assert_p.h"       /* Always include last */
+#endif // MATH_SUPPORT_H
 
-/**
- * \addtogroup CborEncoding
- * @{
- */
-
-
-/** @} */
