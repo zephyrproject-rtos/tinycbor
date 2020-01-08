@@ -22,19 +22,14 @@
 **
 ****************************************************************************/
 
-#ifndef _BSD_SOURCE
 #define _BSD_SOURCE 1
-#endif
-#ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE 1
-#endif
 #ifndef __STDC_LIMIT_MACROS
 #  define __STDC_LIMIT_MACROS 1
 #endif
 
 #include "tinycbor/cbor.h"
 #include <stdlib.h>
-#include "tinycbor/compilersupport_p.h"
 
 /**
  * \fn CborError cbor_value_dup_text_string(const CborValue *value, char **buffer, size_t *buflen, CborValue *next)
@@ -64,7 +59,7 @@
  * \note This function does not perform UTF-8 validation on the incoming text
  * string.
  *
- * \sa cbor_value_get_text_string_chunk(), cbor_value_copy_text_string(), cbor_value_dup_byte_string()
+ * \sa cbor_value_copy_text_string(), cbor_value_dup_byte_string()
  */
 
 /**
@@ -92,12 +87,12 @@
  * number of chunks). It requires constant memory (O(1)) in addition to the
  * malloc'ed block.
  *
- * \sa cbor_value_get_text_string_chunk(), cbor_value_copy_byte_string(), cbor_value_dup_text_string()
+ * \sa cbor_value_copy_byte_string(), cbor_value_dup_text_string()
  */
 CborError _cbor_value_dup_string(const CborValue *value, void **buffer, size_t *buflen, CborValue *next)
 {
-    cbor_assert(buffer);
-    cbor_assert(buflen);
+    assert(buffer);
+    assert(buflen);
     *buflen = SIZE_MAX;
     CborError err = _cbor_value_copy_string(value, NULL, buflen, NULL);
     if (err)

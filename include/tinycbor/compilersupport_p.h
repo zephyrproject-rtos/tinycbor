@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation
+** Copyright (C) 2015 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #ifndef COMPILERSUPPORT_H
 #define COMPILERSUPPORT_H
 
-#include "tinycbor/cbor.h"
+#include "cbor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,13 +37,8 @@ extern "C" {
 #ifndef _DEFAULT_SOURCE
 #  define _DEFAULT_SOURCE
 #endif
-#ifndef assert
-#  include <assert.h>
-#endif
+#include <assert.h>
 #include <float.h>
-#ifndef CBOR_NO_HALF_FLOAT_TYPE
-#include <math.h>
-#endif
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -57,9 +52,9 @@ extern "C" {
 #endif
 
 #if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L || __cpp_static_assert >= 200410
-#  define cbor_static_assert(x)         static_assert(x, #x)
-#elif !defined(__cplusplus) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && (__STDC_VERSION__ > 199901L)
-#  define cbor_static_assert(x)         static_assert(x, #x)
+#  define cbor_static_assert(x)         _Static_assert(x, #x)
+#elif !defined(__cplusplus) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+#  define cbor_static_assert(x)         _Static_assert(x, #x)
 #else
 #  define cbor_static_assert(x)         ((void)sizeof(char[2*!!(x) - 1]))
 #endif
@@ -70,15 +65,7 @@ extern "C" {
 #  define inline    CBOR_INLINE
 #endif
 
-#ifdef NDEBUG
-#  define cbor_assert(cond)     do { if (!(cond)) unreachable(); } while (0)
-#else
-#  define cbor_assert(cond)     assert(cond)
-#endif
-
-#ifndef STRINGIFY
 #define STRINGIFY(x)            STRINGIFY2(x)
-#endif
 #define STRINGIFY2(x)           #x
 
 #if !defined(UINT32_MAX) || !defined(INT64_MAX)
@@ -91,14 +78,6 @@ extern "C" {
 #  define DBL_DECIMAL_DIG       17
 #endif
 #define DBL_DECIMAL_DIG_STR     STRINGIFY(DBL_DECIMAL_DIG)
-
-#if defined(__GNUC__) && defined(__i386__) && !defined(__iamcu__)
-#  define CBOR_INTERNAL_API_CC          __attribute__((regparm(3)))
-#elif defined(_MSC_VER) && defined(_M_IX86)
-#  define CBOR_INTERNAL_API_CC          __fastcall
-#else
-#  define CBOR_INTERNAL_API_CC
-#endif
 
 #ifndef __has_builtin
 #  define __has_builtin(x)  0
@@ -133,7 +112,6 @@ extern "C" {
 #  include <sys/byteorder.h>
 #elif defined(_MSC_VER)
 /* MSVC, which implies Windows, which implies little-endian and sizeof(long) == 4 */
-#  include <stdlib.h>
 #  define cbor_ntohll       _byteswap_uint64
 #  define cbor_htonll       _byteswap_uint64
 #  define cbor_ntohl        _byteswap_ulong
@@ -177,12 +155,8 @@ extern "C" {
 #endif
 
 #ifdef __GNUC__
-#ifndef likely
 #  define likely(x)     __builtin_expect(!!(x), 1)
-#endif
-#ifndef unlikely
 #  define unlikely(x)   __builtin_expect(!!(x), 0)
-#endif
 #  define unreachable() __builtin_unreachable()
 #elif defined(_MSC_VER)
 #  define likely(x)     (x)
@@ -205,11 +179,10 @@ static inline bool add_check_overflow(size_t v1, size_t v2, size_t *r)
 #endif
 }
 
-#ifndef CBOR_NO_HALF_FLOAT_TYPE
 static inline unsigned short encode_half(double val)
 {
 #ifdef __F16C__
-    return _cvtss_sh((float)val, 3);
+    return _cvtss_sh(val, 3);
 #else
     uint64_t v;
     memcpy(&v, &val, sizeof(v));
@@ -236,29 +209,9 @@ static inline unsigned short encode_half(double val)
         /* underflow, make zero */
         return 0;
     }
-
-    /* safe cast here as bit operations above guarantee not to overflow */
-    return (unsigned short)(sign | ((exp + 15) << 10) | mant);
+    return sign | ((exp + 15) << 10) | mant;
 #endif
 }
-
-/* this function was copied & adapted from RFC 7049 Appendix D */
-static inline double decode_half(unsigned short half)
-{
-#ifdef __F16C__
-    return _cvtsh_ss(half);
-#else
-    int exp = (half >> 10) & 0x1f;
-    int mant = half & 0x3ff;
-    double val;
-    if (exp == 0) val = ldexp(mant, -24);
-    else if (exp != 31) val = ldexp(mant + 1024, exp - 25);
-    else val = mant == 0 ? INFINITY : NAN;
-    return half & 0x8000 ? -val : val;
-#endif
-}
-
-#endif
 
 #ifdef __cplusplus
 }

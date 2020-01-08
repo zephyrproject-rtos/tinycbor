@@ -22,23 +22,21 @@
 **
 ****************************************************************************/
 
-#ifndef _BSD_SOURCE
 #define _BSD_SOURCE 1
-#endif
-#ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE 1
-#endif
 #ifndef __STDC_LIMIT_MACROS
 #  define __STDC_LIMIT_MACROS 1
 #endif
 
 #include "tinycbor/cbor.h"
-#include "tinycbor/cborinternal_p.h"
+#include "tinycbor/cborconstants_p.h"
 #include "tinycbor/compilersupport_p.h"
-#include "tinycbor/cbor_buf_writer.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tinycbor/assert_p.h"       /* Always include last */
 
 /**
  * \defgroup CborEncoding Encoding to CBOR
@@ -138,7 +136,7 @@
  * Finally, the example below illustrates expands on the one above and also
  * deals with dynamically growing the buffer if the initial allocation wasn't
  * big enough. Note the two places where the error checking was replaced with
- * an cbor_assertion, showing where the author assumes no error can occur.
+ * an assertion, showing where the author assumes no error can occur.
  *
  * \code
  * uint8_t *encode_string_array(const char **strings, int n, size_t *bufsize)
@@ -158,7 +156,7 @@
  *
  *         cbor_encoder_init(&encoder, &buf, size, 0);
  *         err = cbor_encoder_create_array(&encoder, &arrayEncoder, n);
- *         cbor_assert(err);         // can't fail, the buffer is always big enough
+ *         assert(err);         // can't fail, the buffer is always big enough
  *
  *         for (i = 0; i < n; ++i) {
  *             err = cbor_encode_text_stringz(&arrayEncoder, strings[i]);
@@ -167,7 +165,7 @@
  *         }
  *
  *         err = cbor_encoder_close_container_checked(&encoder, &arrayEncoder);
- *         cbor_assert(err);         // shouldn't fail!
+ *         assert(err);         // shouldn't fail!
  *
  *         more_bytes = cbor_encoder_get_extra_bytes_needed(encoder);
  *         if (more_size) {
@@ -196,34 +194,19 @@
  * Structure used to encode to CBOR.
  */
 
-#ifndef CBOR_NO_DFLT_WRITER
 /**
  * Initializes a CborEncoder structure \a encoder by pointing it to buffer \a
  * buffer of size \a size. The \a flags field is currently unused and must be
  * zero.
  */
-void cbor_encoder_init(CborEncoder *encoder, uint8_t *buffer, size_t size, int flags)
+void cbor_encoder_init(CborEncoder *encoder, cbor_encoder_writer *writer, int flags)
 {
-    cbor_buf_writer_init(&encoder->wr, buffer, size);
-
-    cbor_encoder_cust_writer_init(encoder, &encoder->wr.enc, flags);
-}
-#endif
-
-/**
- * Initializes a CborEncoder structure \a encoder by pointing it to buffer \a
- * buffer of size \a size. The \a flags field is currently unused and must be
- * zero.
- */
-void cbor_encoder_cust_writer_init(CborEncoder *encoder, struct cbor_encoder_writer *w, int flags)
-{
-    encoder->writer = w;
-    encoder->remaining = 2;
+    encoder->writer = writer;
+    encoder->added = 0;
     encoder->flags = flags;
 }
 
-
-#ifndef CBOR_NO_FLOATING_POINT
+#if FLOAT_SUPPORT
 static inline void put16(void *where, uint16_t v)
 {
     v = cbor_htons(v);
@@ -242,7 +225,7 @@ static inline bool isOomError(CborError err)
     return true;
 }
 
-#ifndef CBOR_NO_FLOATING_POINT
+#if FLOAT_SUPPORT
 static inline void put32(void *where, uint32_t v)
 {
     v = cbor_htonl(v);
@@ -258,7 +241,7 @@ static inline void put64(void *where, uint64_t v)
 
 static inline CborError append_to_buffer(CborEncoder *encoder, const void *data, size_t len)
 {
-    return (CborError)encoder->writer->write(encoder->writer, (const char *)data, len);
+    return encoder->writer->write(encoder->writer, data, len);
 }
 
 static inline CborError append_byte_to_buffer(CborEncoder *encoder, uint8_t byte)
@@ -281,7 +264,7 @@ static inline CborError encode_number_no_update(CborEncoder *encoder, uint64_t u
     if (ui < Value8Bit) {
         *bufstart += shiftedMajorType;
     } else {
-        uint8_t more = 0;
+        unsigned more = 0;
         if (ui > 0xffU)
             ++more;
         if (ui > 0xffffU)
@@ -295,15 +278,9 @@ static inline CborError encode_number_no_update(CborEncoder *encoder, uint64_t u
     return append_to_buffer(encoder, bufstart, bufend - bufstart);
 }
 
-static inline void saturated_decrement(CborEncoder *encoder)
-{
-    if (encoder->remaining)
-        --encoder->remaining;
-}
-
 static inline CborError encode_number(CborEncoder *encoder, uint64_t ui, uint8_t shiftedMajorType)
 {
-    saturated_decrement(encoder);
+    ++encoder->added;
     return encode_number_no_update(encoder, ui, shiftedMajorType);
 }
 
@@ -322,13 +299,11 @@ CborError cbor_encode_uint(CborEncoder *encoder, uint64_t value)
  * Appends the negative 64-bit integer whose absolute value is \a
  * absolute_value to the CBOR stream provided by \a encoder.
  *
- * If the value \a absolute_value is zero, this function encodes -2^64 - 1.
- *
  * \sa cbor_encode_uint, cbor_encode_int
  */
 CborError cbor_encode_negative_int(CborEncoder *encoder, uint64_t absolute_value)
 {
-    return encode_number(encoder, absolute_value - 1, NegativeIntegerType << MajorTypeShift);
+    return encode_number(encoder, absolute_value, NegativeIntegerType << MajorTypeShift);
 }
 
 /**
@@ -363,7 +338,7 @@ CborError cbor_encode_simple_value(CborEncoder *encoder, uint8_t value)
     return encode_number(encoder, value, SimpleTypesType << MajorTypeShift);
 }
 
-#ifndef CBOR_NO_FLOATING_POINT
+#if FLOAT_SUPPORT
 /**
  * Appends the floating-point value of type \a fpType and pointed to by \a
  * value to the CBOR stream provided by \a encoder. The value of \a fpType must
@@ -378,7 +353,7 @@ CborError cbor_encode_simple_value(CborEncoder *encoder, uint8_t value)
 CborError cbor_encode_floating_point(CborEncoder *encoder, CborType fpType, const void *value)
 {
     uint8_t buf[1 + sizeof(uint64_t)];
-    cbor_assert(fpType == CborHalfFloatType || fpType == CborFloatType || fpType == CborDoubleType);
+    assert(fpType == CborHalfFloatType || fpType == CborFloatType || fpType == CborDoubleType);
     buf[0] = fpType;
 
     unsigned size = 2U << (fpType - CborHalfFloatType);
@@ -388,7 +363,7 @@ CborError cbor_encode_floating_point(CborEncoder *encoder, CborType fpType, cons
         put32(buf + 1, *(const uint32_t*)value);
     else
         put16(buf + 1, *(const uint16_t*)value);
-    saturated_decrement(encoder);
+    ++encoder->added;
     return append_to_buffer(encoder, buf, size + 1);
 }
 #endif
@@ -436,6 +411,36 @@ CborError cbor_encode_byte_string(CborEncoder *encoder, const uint8_t *string, s
 }
 
 /**
+ * Appends the byte string passed as \a iov and \a iov_len to the CBOR
+ * stream provided by \a encoder. CBOR byte strings are arbitrary raw data.
+ *
+ * \sa CborError cbor_encode_text_stringz, cbor_encode_byte_string
+ */
+CborError cbor_encode_byte_iovec(CborEncoder *encoder,
+                                 const struct cbor_iovec iov[], int iov_len)
+{
+    CborError err;
+    size_t length;
+    int i;
+
+    length = 0;
+    for (i = 0; i < iov_len; i++) {
+        length += iov[i].iov_len;
+    }
+    err = encode_number(encoder, length, ByteStringType << MajorTypeShift);
+    if (err && !isOomError(err)) {
+        return err;
+    }
+    for (i = 0; i < iov_len; i++) {
+        err = append_to_buffer(encoder, iov[i].iov_base, iov[i].iov_len);
+        if (err && !isOomError(err)) {
+            return err;
+        }
+    }
+    return 0;
+}
+
+/**
  * Appends the byte string \a string of length \a length to the CBOR stream
  * provided by \a encoder. CBOR byte strings are arbitrary raw data.
  *
@@ -453,11 +458,8 @@ static CborError create_container(CborEncoder *encoder, CborEncoder *container, 
 {
     CborError err;
     container->writer = encoder->writer;
-#ifndef CBOR_NO_DFLT_WRITER
-    container->wr.end = encoder->wr.end;
-#endif
-    saturated_decrement(encoder);
-    container->remaining = length + 1;      /* overflow ok on CborIndefiniteLength */
+    ++encoder->added;
+    container->added = 0;
 
     cbor_static_assert(((MapType << MajorTypeShift) & CborIteratorFlag_ContainerIsMap) == CborIteratorFlag_ContainerIsMap);
     cbor_static_assert(((ArrayType << MajorTypeShift) & CborIteratorFlag_ContainerIsMap) == 0);
@@ -467,11 +469,12 @@ static CborError create_container(CborEncoder *encoder, CborEncoder *container, 
         container->flags |= CborIteratorFlag_UnknownLength;
         err = append_byte_to_buffer(container, shiftedMajorType + IndefiniteLength);
     } else {
-        if (shiftedMajorType & CborIteratorFlag_ContainerIsMap)
-            container->remaining += length;
         err = encode_number_no_update(container, length, shiftedMajorType);
     }
-    return err;
+    if (err && !isOomError(err))
+        return err;
+
+    return CborNoError;
 }
 
 /**
@@ -519,13 +522,41 @@ CborError cbor_encoder_create_map(CborEncoder *encoder, CborEncoder *mapEncoder,
 }
 
 /**
- * Closes the CBOR container (array or map) provided by \a containerEncoder and
- * updates the CBOR stream provided by \a encoder. Both parameters must be the
- * same as were passed to cbor_encoder_create_array() or
- * cbor_encoder_create_map().
+ * Creates a indefinite-length text string in the CBOR stream provided by
+ * \a encoder and initializes \a stringEncoder so that chunks of original string
+ * can be added using the CborEncoder functions. The string must be terminated by
+ * calling cbor_encoder_close_container() with the same \a encoder and
+ * \a stringEncoder parameters.
  *
- * Since version 0.5, this function verifies that the number of items (or pair
- * of items, in the case of a map) was correct. It is no longer needed to call
+ * \sa cbor_encoder_create_array
+ */
+CborError cbor_encoder_create_indef_text_string(CborEncoder *encoder, CborEncoder *stringEncoder)
+{
+    return create_container(encoder, stringEncoder, CborIndefiniteLength, TextStringType << MajorTypeShift);
+}
+
+/**
+ * Creates a indefinite-length byte string in the CBOR stream provided by
+ * \a encoder and initializes \a stringEncoder so that chunks of original string
+ * can be added using the CborEncoder functions. The string must be terminated by
+ * calling cbor_encoder_close_container() with the same \a encoder and
+ * \a stringEncoder parameters.
+ *
+ * \sa cbor_encoder_create_array
+ */
+CborError cbor_encoder_create_indef_byte_string(CborEncoder *encoder, CborEncoder *stringEncoder)
+{
+    return create_container(encoder, stringEncoder, CborIndefiniteLength, ByteStringType << MajorTypeShift);
+}
+
+/**
+ * Closes the CBOR container (array, map or indefinite-length string) provided
+ * by \a containerEncoder and updates the CBOR stream provided by \a encoder.
+ * Both parameters must be the same as were passed to cbor_encoder_create_array() or
+ * cbor_encoder_create_map() or cbor_encoder_create_indef_byte_string().
+ *
+ * This function does not verify that the number of items (or pair of items, in
+ * the case of a map) was correct. To execute that verification, call
  * cbor_encoder_close_container_checked() instead.
  *
  * \sa cbor_encoder_create_array(), cbor_encoder_create_map()
@@ -536,16 +567,6 @@ CborError cbor_encoder_close_container(CborEncoder *encoder, const CborEncoder *
 
     if (containerEncoder->flags & CborIteratorFlag_UnknownLength)
         return append_byte_to_buffer(encoder, BreakByte);
-
-    if (containerEncoder->remaining != 1)
-        return containerEncoder->remaining == 0 ? CborErrorTooManyItems : CborErrorTooFewItems;
-
-#ifndef CBOR_NO_DFLT_WRITER
-    if (!encoder->wr.end) {
-        return CborErrorOutOfMemory;
-    }
-#endif
-
     return CborNoError;
 }
 
