@@ -31,6 +31,7 @@
 extern "C" {
 #endif
 
+#ifndef CBOR_NO_HALF_FLOAT_TYPE
 /* this function was copied & adapted from RFC 7049 Appendix D */
 static inline double decode_half(unsigned short half)
 {
@@ -46,6 +47,7 @@ static inline double decode_half(unsigned short half)
     return half & 0x8000 ? -val : val;
 #endif
 }
+#endif
 
 #ifdef __cplusplus
 }

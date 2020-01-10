@@ -37,8 +37,13 @@ extern "C" {
 #ifndef _DEFAULT_SOURCE
 #  define _DEFAULT_SOURCE
 #endif
-#include <assert.h>
+#ifndef assert
+#  include <assert.h>
+#endif
 #include <float.h>
+#ifndef CBOR_NO_HALF_FLOAT_TYPE
+#include <math.h>
+#endif
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -65,8 +70,10 @@ extern "C" {
 #  define inline    CBOR_INLINE
 #endif
 
+#ifndef STRINGIFY
 #define STRINGIFY(x)            STRINGIFY2(x)
 #define STRINGIFY2(x)           #x
+#endif
 
 #if !defined(UINT32_MAX) || !defined(INT64_MAX)
 /* C89? We can define UINT32_MAX portably, but not INT64_MAX */
@@ -155,8 +162,12 @@ extern "C" {
 #endif
 
 #ifdef __GNUC__
+#ifndef likely
 #  define likely(x)     __builtin_expect(!!(x), 1)
+#endif
+#ifndef unlikely
 #  define unlikely(x)   __builtin_expect(!!(x), 0)
+#endif
 #  define unreachable() __builtin_unreachable()
 #elif defined(_MSC_VER)
 #  define likely(x)     (x)
@@ -179,6 +190,7 @@ static inline bool add_check_overflow(size_t v1, size_t v2, size_t *r)
 #endif
 }
 
+#ifndef CBOR_NO_HALF_FLOAT_TYPE
 static inline unsigned short encode_half(double val)
 {
 #ifdef __F16C__
@@ -212,6 +224,7 @@ static inline unsigned short encode_half(double val)
     return sign | ((exp + 15) << 10) | mant;
 #endif
 }
+#endif
 
 #ifdef __cplusplus
 }

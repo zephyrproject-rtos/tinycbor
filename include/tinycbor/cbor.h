@@ -25,6 +25,8 @@
 #ifndef CBOR_H
 #define CBOR_H
 
+#include "tinycbor/config.h"
+
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>

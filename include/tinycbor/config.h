@@ -16,19 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 #ifndef TINYCBOR_CONFIG_H
 #define TINYCBOR_CONFIG_H
-
-/** This option specifies whether a default writer exists **/
-#ifdef CONFIG_CBOR_NO_DFLT_WRITER
-#define CBOR_NO_DFLT_WRITER CONFIG_CBOR_NO_DFLT_WRITER
-#endif
-
-/** This option specifies whether a default reader exists **/
-#ifdef CONFIG_CBOR_NO_DFLT_READER
-#define CBOR_NO_DFLT_READER CONFIG_CBOR_NO_DFLT_READER
-#endif
 
 /** This option specifies whether a check user exists for a cbor encoder **/
 #ifdef CONFIG_CBOR_ENCODER_NO_CHECK_USER
