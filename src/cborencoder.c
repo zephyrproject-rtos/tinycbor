@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "tinycbor/assert_p.h"       /* Always include last */
 
 /**
@@ -206,7 +207,7 @@ void cbor_encoder_init(CborEncoder *encoder, cbor_encoder_writer *writer, int fl
     encoder->flags = flags;
 }
 
-#if FLOAT_SUPPORT
+#ifndef CBOR_NO_FLOATING_POINT
 static inline void put16(void *where, uint16_t v)
 {
     v = cbor_htons(v);
@@ -225,7 +226,7 @@ static inline bool isOomError(CborError err)
     return true;
 }
 
-#if FLOAT_SUPPORT
+#ifndef CBOR_NO_FLOATING_POINT
 static inline void put32(void *where, uint32_t v)
 {
     v = cbor_htonl(v);
@@ -264,7 +265,7 @@ static inline CborError encode_number_no_update(CborEncoder *encoder, uint64_t u
     if (ui < Value8Bit) {
         *bufstart += shiftedMajorType;
     } else {
-        unsigned more = 0;
+        uint8_t more = 0;
         if (ui > 0xffU)
             ++more;
         if (ui > 0xffffU)
@@ -338,7 +339,7 @@ CborError cbor_encode_simple_value(CborEncoder *encoder, uint8_t value)
     return encode_number(encoder, value, SimpleTypesType << MajorTypeShift);
 }
 
-#if FLOAT_SUPPORT
+#ifndef CBOR_NO_FLOATING_POINT
 /**
  * Appends the floating-point value of type \a fpType and pointed to by \a
  * value to the CBOR stream provided by \a encoder. The value of \a fpType must

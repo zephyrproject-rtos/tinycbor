@@ -30,14 +30,17 @@
 
 #include "tinycbor/cbor.h"
 #include "tinycbor/compilersupport_p.h"
-#include "tinycbor/math_support_p.h"
 
-#include <float.h>
 #include <inttypes.h>
+#include <float.h>
+#ifndef CBOR_NO_FLOATING_POINT
 #include <math.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "tinycbor/math_support_p.h"
 
 /**
  * \defgroup CborPretty Converting CBOR to text
@@ -265,7 +268,7 @@ static CborError container_to_pretty(FILE *out, CborValue *it, CborType containe
 
 static CborError value_to_pretty(FILE *out, CborValue *it)
 {
-    CborError err;
+    CborError err = CborNoError;
     CborType type = cbor_value_get_type(it);
     switch (type) {
     case CborArrayType:
@@ -392,7 +395,7 @@ static CborError value_to_pretty(FILE *out, CborValue *it)
             return CborErrorIO;
         break;
     }
-#if FLOAT_SUPPORT
+#ifndef CBOR_NO_FLOATING_POINT
     case CborDoubleType: {
         const char *suffix;
         double val;
@@ -402,12 +405,14 @@ static CborError value_to_pretty(FILE *out, CborValue *it)
             cbor_value_get_float(it, &f);
             val = f;
             suffix = "f";
+#ifndef CBOR_NO_HALF_FLOAT_TYPE
         } else if (false) {
             uint16_t f16;
     case CborHalfFloatType:
             cbor_value_get_half_float(it, &f16);
             val = decode_half(f16);
             suffix = "f16";
+#endif
         } else {
             cbor_value_get_double(it, &val);
             suffix = "";
@@ -438,7 +443,8 @@ static CborError value_to_pretty(FILE *out, CborValue *it)
         return CborErrorUnknownType;
     }
 
-    err = cbor_value_advance_fixed(it);
+    if (err == CborNoError)
+	err = cbor_value_advance_fixed(it);
     return err;
 }
 

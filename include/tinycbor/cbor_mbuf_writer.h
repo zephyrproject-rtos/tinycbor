@@ -20,7 +20,9 @@
 #ifndef CBOR_MBUF_WRITER_H
 #define CBOR_MBUF_WRITER_H
 
+#ifdef MYNEWT
 #include "os/mynewt.h"
+#endif
 #include <tinycbor/cbor.h>
 
 #ifdef __cplusplus
