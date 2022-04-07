@@ -1,5 +1,8 @@
 if(CONFIG_TINYCBOR)
 
+message(WARNING "TinyCBOR is deprecated.
+Please use zcbor instead with CONFIG_ZCBOR.")
+
 zephyr_include_directories(../include)
 
 zephyr_library()
